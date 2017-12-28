@@ -29,7 +29,7 @@ class CallchainSandbox {
 
 		return params.value
 			? Mono.just(new Result1(42))
-			: Mono.just(Result1.EMPTY); // Mono.empty();
+			: Mono.empty();
 	}
 
 	// pass result of service1 call to service2 giving us result2
@@ -49,6 +49,7 @@ class CallchainSandbox {
 				// some side effect code when call was successful,
 				// regardless of the Mono cardinality (0 or 1)
 				.doOnSuccess( callService1Result -> out.println("callServicedoOnSuccess: " + callService1Result) )
+				.defaultIfEmpty(Result1.EMPTY)
 
 				// the call chain stops here in case of an Mono.empty() as a call result
 				// so flatMap can't be used here
@@ -76,8 +77,13 @@ class CallchainSandbox {
 	static class Result1 {
 
 		// artificial EMPTY result
-		static final Result1 EMPTY = new EmptyResult1();
-		static final class EmptyResult1 extends Result1 {}
+		static final Result1 EMPTY = new EmptyResult1() {
+			@Override
+			public String toString() {
+				return "EmptyResult1";
+			}
+		};
+		static class EmptyResult1 extends Result1 {}
 
 		Integer result;
 		private Result1() { result = null; }
